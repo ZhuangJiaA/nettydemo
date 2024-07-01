@@ -1,0 +1,44 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.3.1'
+	id 'io.spring.dependency-management' version '1.1.5'
+	id 'com.google.protobuf' version '0.8.18'
+}
+
+group = 'com.sixeco'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'cn.hutool:hutool-all:5.8.28'
+	implementation 'com.alibaba:fastjson:1.2.74'
+	implementation 'com.google.protobuf:protobuf-java:3.25.3'
+	implementation 'io.netty:netty-all:4.1.77.Final'
+	implementation 'org.projectlombok:lombok:1.18.30'
+	implementation 'org.slf4j:slf4j-api:2.0.13'
+
+	implementation 'com.google.protobuf:protobuf-java:3.25.3'
+	implementation 'com.google.protobuf:protobuf-java-util:3.25.3'
+	runtimeOnly 'org.aspectj:aspectjweaver:1.9.22'
+
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
