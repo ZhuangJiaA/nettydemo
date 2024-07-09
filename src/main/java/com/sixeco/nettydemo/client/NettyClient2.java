@@ -12,14 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.StringJoiner;
 import java.util.UUID;
 
-import static com.sixeco.nettydemo.handler.MyShareCodec.dataRelay;
-
 @Slf4j
-public class NettyClient {
+public class NettyClient2 {
 
     public static void main(String[] args) throws InterruptedException, IOException {
 
@@ -58,30 +55,28 @@ public class NettyClient {
             clientChannel.sync();
             log.info("同步等待到客户端连接成功,开始发送数据");
             //获取通道对象进行写操作
-            clientChannel.channel().writeAndFlush(NettyClient.generateProto());
+            clientChannel.channel().writeAndFlush(NettyClient2.generateProto());
         } else {
             //异步监听连接成功/失败事件
             clientChannel.addListener((ChannelFutureListener) future -> {
                 if (future.isSuccess()) {
                     log.info("异步监听到客户端连接成功,开始发送数据");
                     //获取通道对象进行写操作
-                    for (int i = 0; i < 1; i++) {
+                    for (int i = 0; i < 50; i++) {
                         MessageBody.MessageProto.Builder messageProto = MessageBody.MessageProto.newBuilder();
                         messageProto.setCmd(2);
-                        messageProto.setId(1);
-                        messageProto.setName("client1");
-                        messageProto.setJsonData("client1已经跑了" + i + "米");
+                        messageProto.setId(2);
+                        messageProto.setName("client2");
+                        messageProto.setJsonData("client2已经跑了" + i + "米");
                         MessageBody.MessageProto message = messageProto.build();
                         // 将数据写到输出流
                         ByteArrayOutputStream output = new ByteArrayOutputStream();
                         message.writeTo(output);
-                        System.out.println("data msg length" +  output.toByteArray().length);
                         clientChannel.channel().writeAndFlush(output.toByteArray());
 //                        Thread.sleep(300);
                     }
                 } else {
                     log.info("异步监听到客户端连接失败,关闭通道和事件组,失败原因: {}", future.cause());
-                    dataRelay.clear();
                     clientChannel.channel().close();
                 }
             });
@@ -106,9 +101,9 @@ public class NettyClient {
     public static byte[] generateProto() throws IOException {
         MessageBody.MessageProto.Builder messageProto = MessageBody.MessageProto.newBuilder();
         messageProto.setCmd(2);
-        messageProto.setId(1);
-        messageProto.setName("client1");
-        messageProto.setJsonData("client1令牌");
+        messageProto.setId(2);
+        messageProto.setName("client2");
+        messageProto.setJsonData("client2令牌");
         MessageBody.MessageProto message = messageProto.build();
         // 将数据写到输出流
         ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -116,7 +111,5 @@ public class NettyClient {
         // 将数据序列化后发送
         return output.toByteArray();
     }
-
-
 
 }

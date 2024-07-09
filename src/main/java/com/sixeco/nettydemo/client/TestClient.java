@@ -2,27 +2,43 @@ package com.sixeco.nettydemo.client;
 
 import com.sixeco.nettydemo.handler.MyClientChannelInboundHandler;
 import com.sixeco.nettydemo.handler.MyShareCodec;
-import com.sixeco.nettydemo.message.MessageData;
 import com.sixeco.nettydemo.proto.MessageBody;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.StringJoiner;
-import java.util.UUID;
 
 import static com.sixeco.nettydemo.handler.MyShareCodec.dataRelay;
 
 @Slf4j
-public class NettyClient {
+public class TestClient extends Thread {
 
-    public static void main(String[] args) throws InterruptedException, IOException {
+    private final int totalRequests;
+    private final long interval; // 每次请求间隔
 
+    public TestClient(int totalRequests, long interval) {
+        this.totalRequests = totalRequests;
+        this.interval = interval;
+    }
+
+    @SneakyThrows
+    @Override
+    public void run() {
+        for(int i = 0; i < totalRequests; i++) {
+            // 发起请求
+            doRequest();
+
+            // 等待间隔时间
+//                Thread.sleep(interval);
+        }
+    }
+
+    private void doRequest() throws InterruptedException, IOException {
         //是否需要同步操作
         boolean sync = false;
 
@@ -65,12 +81,23 @@ public class NettyClient {
                 if (future.isSuccess()) {
                     log.info("异步监听到客户端连接成功,开始发送数据");
                     //获取通道对象进行写操作
+                    String data = "There once was a man from Nantucket\n" +
+                            "Who kept all his cash in a bucket\n" +
+                            "But his daughter, named Nan,\n" +
+                            "Ran away with a man\n" +
+                            "And as for the money, he...\n" +
+                            "\n" +
+                            "It was a dark and stormy night when the old mansion suddenly came into view. Thunder rumbled in the distance as I turned down the long driveway, the trees on either side swaying violently in the strong winds. When I reached the heavy wooden doors at the front of the house, I hesitated, not sure whether to knock or run as fast as I could in the other direction. After a few moments debating with myself, I steeled my nerves and rapped loudly three times.\n" +
+                            "\n" +
+                            "The door creaked open slowly to reveal a pale, thin man peering out at me from within the shadows. \"Can I help you?\" he croaked in a quiet voice. I cleared my throat nervously. \"I received a letter saying you had a room for rent?\" The man nodded slowly. \"Indeed I do. Please, come in out of the storm.\" He swung the door open further to allow me passage. As I crossed the threshold, a shiver ran down my spine that had nothing to do with the howling winds outside. Something wasn't right about this house or its owner, but it was too late to turn back now. I was stuck here for the night, at the mercy of whatever mysteries this ominous mansion held...\n" +
+                            "\n" +
+                            "The morning sun shone brightly through the bedroom windows, waking me from a restless sleep. Strange dreams of shadowy figures and ghostly whispers had plagued me all night. I stretched and climbed out of the creaky old bed, glancing around the sparse room as the last remnants of sleep faded. All seemed normal now in the light of day. Perhaps the darkness of the previous evening had merely played tricks on my mind. I dressed quickly and made my way downstairs, the old wooden floors groaning under my feet, eager to begin my day and leave this curiously eerie place behind. But would it truly be so easy to escape whatever unknown forces lingered within these walls after night fell once more?";
                     for (int i = 0; i < 1; i++) {
                         MessageBody.MessageProto.Builder messageProto = MessageBody.MessageProto.newBuilder();
                         messageProto.setCmd(2);
                         messageProto.setId(1);
                         messageProto.setName("client1");
-                        messageProto.setJsonData("client1已经跑了" + i + "米");
+                        messageProto.setJsonData(data);
                         MessageBody.MessageProto message = messageProto.build();
                         // 将数据写到输出流
                         ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -89,34 +116,12 @@ public class NettyClient {
         }
     }
 
-    /**
-     * 随机根据指定格式生成消息
-     */
-    public static MessageData generateMessage() {
-        StringJoiner str = new StringJoiner("-");
-        for (int i = 0; i < 1; i++) {
-            str.add(UUID.randomUUID().toString());
-        }
-        MessageData data = new MessageData();
-        data.setName("client");
-        data.setMessage(str.toString());
-        return data;
+    public static void main(String[] args) throws Exception {
+        // 每秒10次,每次间隔100ms
+        TestClient thread1 = new TestClient(300, 100);
+//        TestClient thread2 = new TestClient(500, 100);
+        thread1.start();
+//        thread2.start();
     }
-
-    public static byte[] generateProto() throws IOException {
-        MessageBody.MessageProto.Builder messageProto = MessageBody.MessageProto.newBuilder();
-        messageProto.setCmd(2);
-        messageProto.setId(1);
-        messageProto.setName("client1");
-        messageProto.setJsonData("client1令牌");
-        MessageBody.MessageProto message = messageProto.build();
-        // 将数据写到输出流
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        message.writeTo(output);
-        // 将数据序列化后发送
-        return output.toByteArray();
-    }
-
-
 
 }

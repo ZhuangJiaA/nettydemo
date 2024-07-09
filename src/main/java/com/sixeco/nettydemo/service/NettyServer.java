@@ -1,8 +1,6 @@
 package com.sixeco.nettydemo.service;
 
-import com.sixeco.nettydemo.handler.MyChannelDuplexHandler;
-import com.sixeco.nettydemo.handler.MyServiceChannelInboundHandler;
-import com.sixeco.nettydemo.handler.MyShareCodec;
+import com.sixeco.nettydemo.handler.*;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -15,6 +13,8 @@ import org.springframework.stereotype.Component;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
+
+import static com.sixeco.nettydemo.handler.MyShareCodec.dataRelay;
 
 @Slf4j
 @Component
@@ -39,6 +39,8 @@ public class NettyServer {
 //        MyServiceChannelInboundHandler myServiceChannelInboundHandler = new MyServiceChannelInboundHandler();
         //创建共享编解码器
         MyShareCodec shareCodec = new MyShareCodec();
+        MyShareCodecString myShareCodecString = new MyShareCodecString();
+        MyShareCodecProto myShareCodecProto = new MyShareCodecProto();
         //用于处理对应的事件
         ChannelDuplexHandler channelDuplexHandler = new MyChannelDuplexHandler();
         //启动器，负责组装netty组件，启动服务器
@@ -57,7 +59,7 @@ public class NettyServer {
                         log.info("接收到一条新的客户端连接：{}",nioSocketChannel);
                         nioSocketChannel.pipeline().addLast(new IdleStateHandler(10, 10, 20, TimeUnit.SECONDS));
                         nioSocketChannel.pipeline().addLast(shareCodec);
-                        nioSocketChannel.pipeline().addLast(channelDuplexHandler);
+//                        nioSocketChannel.pipeline().addLast(channelDuplexHandler);
                         nioSocketChannel.pipeline().addLast(myServiceChannelInboundHandler);
                     }
                 })
@@ -79,6 +81,7 @@ public class NettyServer {
             return;
         }
         log.info("开始关闭server通道{}",System.lineSeparator());
+        dataRelay.clear();
         channel.close();
         bossGroup.shutdownGracefully();
         workerGroup.shutdownGracefully();

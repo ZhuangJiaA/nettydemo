@@ -18,6 +18,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.Charset;
 
+import static com.sixeco.nettydemo.handler.MyShareCodec.dataRelay;
+
 /**
  * @author zwj
  * @description: 通道业务处理器，SimpleChannelInboundHandler会自动处理释放butebuf
@@ -56,6 +58,7 @@ public class MyServiceChannelInboundHandler extends SimpleChannelInboundHandler 
         log.info("通道触发channelInactive断开事件：{}", ctx.channel());
         //关闭通道
         if (ctx.channel().isActive()) {
+            dataRelay.clear();
             ctx.close();
         }
     }
@@ -71,6 +74,7 @@ public class MyServiceChannelInboundHandler extends SimpleChannelInboundHandler 
         log.info("通道触发channelUnregistered注销事件：{}", ctx.channel());
         //关闭通道
         if (ctx.channel().isActive()) {
+            dataRelay.clear();
             ctx.close();
         }
     }
@@ -116,7 +120,10 @@ public class MyServiceChannelInboundHandler extends SimpleChannelInboundHandler 
 //                    log.error("消息发送失败", future.cause());
 //                }
 //            });
-        } else {
+        }else if (msg instanceof String) {
+            log.info("开始接收请求消息");
+            log.info("[{}]接收到请求消息: {}", DateUtil.date(), msg);
+        }else {
             log.info("开始接收请求消息");
             // 接收到流并读取
             ByteArrayInputStream input = new ByteArrayInputStream((byte[]) msg);
@@ -156,6 +163,7 @@ public class MyServiceChannelInboundHandler extends SimpleChannelInboundHandler 
         log.info("通道触发exceptionCaught异常事件：{}", ctx.channel());
         //关闭通道
         if (ctx.channel().isActive()) {
+            dataRelay.clear();
             ctx.close();
         }
     }

@@ -2,15 +2,9 @@ package com.sixeco.nettydemo.handler;
 
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
-import com.google.protobuf.ExtensionRegistry;
-import com.google.protobuf.ExtensionRegistryLite;
-import com.google.protobuf.MessageLite;
 import com.sixeco.nettydemo.message.MessageConstant;
-import com.sixeco.nettydemo.message.MessageData;
 import com.sixeco.nettydemo.utils.ByteUtlis;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -20,10 +14,7 @@ import io.netty.handler.codec.TooLongFrameException;
 import lombok.extern.slf4j.Slf4j;
 import util.ByteBufferUtlis;
 
-import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @ChannelHandler.Sharable
-public class MyShareCodec extends MessageToMessageCodec<ByteBuf, byte[]> {
+public class MyShareCodecString extends MessageToMessageCodec<ByteBuf, String> {
 
     private Class<?> genericClass;
 
@@ -63,19 +54,19 @@ public class MyShareCodec extends MessageToMessageCodec<ByteBuf, byte[]> {
 
 
     @Override
-    protected void encode(ChannelHandlerContext channelHandlerContext, byte[] s, List<Object> list) throws Exception {
+    protected void encode(ChannelHandlerContext channelHandlerContext, String s, List<Object> list) throws Exception {
         ByteBuffer readBuffer = ByteBuffer.allocate(1024 * 1024);
         // 先写入消息起始标识
         readBuffer.put(headData);
         // 写入消息长度
-        int length = s.length;
+        int length = s.length();
         readBuffer.putInt(length);
         // 写入消息内容
-        readBuffer.put(s);
+        readBuffer.put(s.getBytes());
         byte[] bytes = ByteBufferUtlis.readByte(readBuffer);
         ByteBuf buf = Unpooled.copiedBuffer(bytes);
         list.add(buf);
-        log.info("encode was called...... " + s.length + " " + bytes.length);
+        log.info("encode was called...... " + s.length() + " " + bytes.length);
     }
 
 //    @Override
@@ -152,7 +143,7 @@ public class MyShareCodec extends MessageToMessageCodec<ByteBuf, byte[]> {
             byte[] currentByteData = new byte[in.readableBytes()];
             in.readBytes(currentByteData);
 
-            if (cn.hutool.core.util.ObjectUtil.isNotNull(beforeByteData)) {
+            if (ObjectUtil.isNotNull(beforeByteData)) {
                 currentByteData = ByteUtlis.byteMergerAll(beforeByteData, currentByteData);
             }
 

@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
 
+import static com.sixeco.nettydemo.handler.MyShareCodec.dataRelay;
+
 
 /**
  * @author zwj
@@ -41,6 +43,7 @@ public class MyClientChannelInboundHandler extends SimpleChannelInboundHandler {
         log.info("通道触发channelInactive连接关闭事件: {}",ctx.channel());
         //关闭链路
         if(ctx.channel().isActive()){
+            dataRelay.clear();
             ctx.close();
         }
     }
@@ -54,6 +57,7 @@ public class MyClientChannelInboundHandler extends SimpleChannelInboundHandler {
         log.info("通道触发channelUnregistered关闭注册事件: {}",ctx.channel());
         //关闭链路
         if(ctx.channel().isActive()){
+            dataRelay.clear();
             ctx.close();
         }
     }
@@ -116,6 +120,7 @@ public class MyClientChannelInboundHandler extends SimpleChannelInboundHandler {
         log.info("通道触发exceptionCaught异常事件: {}",ctx.channel());
         //关闭链路
         if(ctx.channel().isActive()){
+            dataRelay.clear();
             ctx.close();
         }
     }
